@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRF H/R Strainer Sizing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+:root{
+  --bg:#0D1520;--s1:#152030;--s2:#1C2D42;--s3:#253852;
+  --bd:#2A3F5A;--bd2:#3A5578;
+  --tx:#E2F0FA;--mu:#7BAAC8;--di:#4A6A88;
+  --ok:#4ADE80;--ok2:#16A34A;
+  --wa:#FBBF24;--wa2:#D97706;
+  --er:#F87171;--er2:#DC2626;
+  --liq:#22D3EE;--liq2:#0891B2;
+  --suc:#A78BFA;--suc2:#6D28D9;
+  --dis:#FB923C;--dis2:#C2410C;
+  --mono:'Courier New',monospace;
+  --sans:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:13.5px;min-height:100vh}
+a{color:var(--liq)}
+
+/* ── Topbar ── */
+.topbar{background:var(--s1);border-bottom:2px solid var(--liq2);padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.app-title{font-size:15px;font-weight:700;color:var(--liq);flex:1;min-width:180px}
+.app-title span{color:var(--mu);font-weight:400;font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden}
+.seg button{padding:5px 13px;background:transparent;border:none;color:var(--mu);cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s}
+.seg button.on{background:var(--liq2);color:var(--tx)}
+select,input[type=number]{background:var(--s2);border:1px solid var(--bd);color:var(--tx);border-radius:5px;padding:5px 8px;font-size:13px;outline:none;transition:border 0.15s}
+select:focus,input:focus{border-color:var(--liq2)}
+label.ctl{font-size:11px;color:var(--mu);font-weight:600}
+
+/* ── Main layout ── */
+.main{padding:14px 18px;max-width:1240px;margin:0 auto}
+
+/* ── Card ── */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.sec{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+
+/* ── Row / Field ── */
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:11px;color:var(--mu);font-weight:600}
+.fld input[type=number]{width:84px}
+
+/* ── Chip ── */
+.chip{background:var(--s3);border:1px solid var(--bd2);border-radius:20px;padding:4px 12px;font-size:12px;display:inline-flex;gap:5px;align-items:center}
+.chip .cl{color:var(--mu)}.chip .cv{font-family:var(--mono);font-weight:700;color:var(--liq)}
+
+/* ── Three-column header grid ── */
+.hdr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:700px){.hdr3{grid-template-columns:1fr}}
+
+/* ── Line header card ── */
+.lcard{border-radius:10px;padding:14px 16px}
+.lcard.liq{background:#0a1f30;border:1px solid var(--liq2)}
+.lcard.suc{background:#130f2a;border:1px solid var(--suc2)}
+.lcard.dis{background:#1e0e05;border:1px solid var(--dis2)}
+.lcard .lsec{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid}
+.lcard.liq .lsec{color:var(--liq);border-color:var(--liq2)}
+.lcard.suc .lsec{color:var(--suc);border-color:var(--suc2)}
+.lcard.dis .lsec{color:var(--dis);border-color:var(--dis2)}
+
+/* ── Result rows ── */
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bd)}
+.rrow:last-child{border-bottom:none}
+.rl{color:var(--mu);font-size:12px}.rv{font-family:var(--mono);font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px}
+.ok{background:rgba(74,222,128,0.14);color:var(--ok);border:1px solid rgba(74,222,128,0.3)}
+.wa{background:rgba(251,191,36,0.14);color:var(--wa);border:1px solid rgba(251,191,36,0.3)}
+.er{background:rgba(248,113,113,0.14);color:var(--er);border:1px solid rgba(248,113,113,0.3)}
+.na{background:rgba(100,130,160,0.1);color:var(--mu);border:1px solid var(--bd)}
+
+/* ── Port section ── */
+.port-wrap{overflow-x:auto;margin-top:6px}
+table.ptbl{width:100%;border-collapse:collapse;font-size:12px;min-width:680px}
+table.ptbl th{background:var(--s3);padding:7px 9px;text-align:left;color:var(--mu);font-size:10px;letter-spacing:0.5px;font-weight:700;border-bottom:2px solid var(--bd2)}
+table.ptbl th.liq{color:var(--liq)}
+table.ptbl th.suc{color:var(--suc)}
+table.ptbl th.dis{color:var(--dis)}
+table.ptbl td{padding:5px 9px;border-bottom:1px solid var(--bd);vertical-align:middle}
+table.ptbl tr:hover td{background:var(--s2)}
+table.ptbl input[type=number]{width:64px;padding:3px 7px;font-size:12px}
+table.ptbl select{padding:3px 5px;font-size:12px}
+.pmono{font-family:var(--mono);font-size:12px}
+
+/* ── Mode pill ── */
+.mpill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all 0.15s}
+.mc{background:rgba(34,211,238,0.15);color:var(--liq);border:1px solid var(--liq2)}
+.mh{background:rgba(251,146,60,0.15);color:var(--dis);border:1px solid var(--dis2)}
+.moff{background:var(--s3);color:var(--di);border:1px solid var(--bd)}
+
+/* ── Summary grid ── */
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.scard{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;text-align:center}
+.scard .sl{font-size:10px;color:var(--mu);margin-bottom:3px}
+.scard .sv{font-size:15px;font-weight:700;font-family:var(--mono)}
+
+/* ── Diagram ── */
+.diag-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-top:12px}
+.diag-title{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;font-weight:700}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--mu)}
+.ldot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+
+/* ── Dist toggle ── */
+.dist-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px;font-size:12px;color:var(--mu)}
+.dist-row label{display:flex;gap:5px;align-items:center;cursor:pointer}
+
+/* ── Port pipe selects row ── */
+.pipe-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:600px){.pipe-row{grid-template-columns:1fr}}
+
+/* ── Range slider ── */
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bd2);outline:none;width:120px;vertical-align:middle}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--liq);cursor:pointer}
+
+/* ── Footer ── */
+footer{text-align:center;padding:20px;font-size:11px;color:var(--di);border-top:1px solid var(--bd);margin-top:20px}
+</style>
+</head>
+<body>
+
+<!-- ══════════ TOP BAR ══════════ -->
+<div class="topbar">
+  <div class="app-title">🔧 VRF H/R Strainer Sizing <span>— RB unit (configurable ports)</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div class="seg">
+      <button id="btn-mm" class="on" onclick="setUnit('mm')">mm</button>
+      <button id="btn-in" onclick="setUnit('in')">in</button>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center">
+      <label class="ctl">Refrigerant</label>
+      <select id="sel-ref" onchange="recalcAll()">
+        <option value="R410A">R410A</option>
+        <option value="R32">R32</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══════════ SYSTEM CONDITIONS ══════════ -->
+<div class="card">
+  <div class="sec">System conditions</div>
+  <div class="row">
+    <div class="fld"><label>Tc — condensing (°C)</label><input type="number" id="inp-Tc" value="45" oninput="recalcAll()"></div>
+    <div class="fld"><label>Te — evaporating (°C)</label><input type="number" id="inp-Te" value="7" oninput="recalcAll()"></div>
+    <div class="fld" style="margin-left:12px">
+      <label>จำนวน Port</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="range" id="port-slider" min="2" max="16" value="8" step="1" oninput="onPortCountChange()">
+        <input type="number" id="port-num" value="8" min="2" max="16" style="width:56px" oninput="onPortCountChange()">
+        <span style="font-size:12px;color:var(--mu)">ports</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding-bottom:2px">
+      <div class="chip"><span class="cl">Δh cool</span><span class="cv" id="dh-cool">—</span><span class="cl">kJ/kg</span></div>
+      <div class="chip"><span class="cl">Δh heat</span><span class="cv" id="dh-heat">—</span><span class="cl">kJ/kg</span></div>
+      <div class="chip"><span class="cl">ρ liq</span><span class="cv" id="rho-liq">—</span><span class="cl">kg/m³</span></div>
+      <div class="chip"><span class="cl">ρ suc</span><span class="cv" id="rho-suc">—</span><span class="cl">kg/m³</span></div>
+      <div class="chip"><span class="cl">ρ dis</span><span class="cv" id="rho-dis">—</span><span class="cl">kg/m³</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ HEADER CALCULATIONS ══════════ -->
+<div class="card">
+  <div class="sec">Header strainer — sizing per line type</div>
+  <div class="hdr3" id="hdr3">
+
+    <!-- LIQUID -->
+    <div class="lcard liq">
+      <div class="lsec">💧 Liquid line</div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">Pipe OD</label>
+        <select id="hl-pipe" onchange="calcHeaders()"></select>
+      </div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">K factor</label>
+        <input type="number" id="kl" value="5.0" step="0.5" style="width:80px" oninput="calcHeaders()">
+      </div>
+      <div class="rrow"><span class="rl">Total ṁ</span><span class="rv pmono" id="hl-mdot">—</span></div>
+      <div class="rrow"><span class="rl">Q_v</span><span class="rv pmono" id="hl-qv">—</span></div>
+      <div class="rrow"><span class="rl">Pipe ID</span><span class="rv pmono" id="hl-id">—</span></div>
+      <div class="rrow"><span class="rl">Velocity</span><span class="rv"><span id="hl-vel" class="pmono">—</span><span id="hl-vs" class="badge na">—</span></span></div>
+      <div class="rrow"><span class="rl">Pressure drop</span><span class="rv"><span id="hl-dp" class="pmono">—</span><span id="hl-ds" class="badge na">—</span></span></div>
+      <div style="margin-top:8px;font-size:11px" id="hl-rec">—</div>
+    </div>
+
+    <!-- SUCTION -->
+    <div class="lcard suc">
+      <div class="lsec">🌀 Suction line (low-side gas)</div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">Pipe OD</label>
+        <select id="hs-pipe" onchange="calcHeaders()"></select>
+      </div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">K factor</label>
+        <input type="number" id="ks" value="5.0" step="0.5" style="width:80px" oninput="calcHeaders()">
+      </div>
+      <div class="rrow"><span class="rl">Total ṁ (cooling only)</span><span class="rv pmono" id="hs-mdot">—</span></div>
+      <div class="rrow"><span class="rl">Q_v</span><span class="rv pmono" id="hs-qv">—</span></div>
+      <div class="rrow"><span class="rl">Pipe ID</span><span class="rv pmono" id="hs-id">—</span></div>
+      <div class="rrow"><span class="rl">Velocity</span><span class="rv"><span id="hs-vel" class="pmono">—</span><span id="hs-vs" class="badge na">—</span></span></div>
+      <div class="rrow"><span class="rl">Pressure drop</span><span class="rv"><span id="hs-dp" class="pmono">—</span><span id="hs-ds" class="badge na">—</span></span></div>
+      <div style="margin-top:8px;font-size:11px" id="hs-rec">—</div>
+    </div>
+
+    <!-- DISCHARGE -->
+    <div class="lcard dis">
+      <div class="lsec">🔥 Discharge line (HP gas)</div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">Pipe OD</label>
+        <select id="hd-pipe" onchange="calcHeaders()"></select>
+      </div>
+      <div class="fld" style="margin-bottom:10px">
+        <label style="color:var(--mu)">K factor</label>
+        <input type="number" id="kd" value="5.0" step="0.5" style="width:80px" oninput="calcHeaders()">
+      </div>
+      <div class="rrow"><span class="rl">Total ṁ (heating only)</span><span class="rv pmono" id="hd-mdot">—</span></div>
+      <div class="rrow"><span class="rl">Q_v</span><span class="rv pmono" id="hd-qv">—</span></div>
+      <div class="rrow"><span class="rl">Pipe ID</span><span class="rv pmono" id="hd-id">—</span></div>
+      <div class="rrow"><span class="rl">Velocity</span><span class="rv"><span id="hd-vel" class="pmono">—</span><span id="hd-vs" class="badge na">—</span></span></div>
+      <div class="rrow"><span class="rl">Pressure drop</span><span class="rv"><span id="hd-dp" class="pmono">—</span><span id="hd-ds" class="badge na">—</span></span></div>
+      <div style="margin-top:8px;font-size:11px" id="hd-rec">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PER-PORT CALCULATIONS ══════════ -->
+<div class="card">
+  <div class="sec">Per-port strainer</div>
+
+  <div class="dist-row">
+    <label><input type="radio" name="dist" value="equalC" checked onchange="toggleDist()"> แจกจ่ายเท่ากัน (Cooling ทุก port)</label>
+    <label><input type="radio" name="dist" value="equalH" onchange="toggleDist()"> แจกจ่ายเท่ากัน (Heating ทุก port)</label>
+    <label><input type="radio" name="dist" value="manual" onchange="toggleDist()"> กำหนดเอง</label>
+    <span id="eq-field" style="display:flex;gap:6px;align-items:center">
+      Total kW: <input type="number" id="eq-total" value="80" style="width:68px" oninput="distributeEqual()">
+    </span>
+    <span style="margin-left:auto;font-size:12px">
+      <span style="color:var(--liq)">C: <b id="sum-cool">—</b> kW</span> &nbsp;
+      <span style="color:var(--dis)">H: <b id="sum-heat">—</b> kW</span>
+    </span>
+  </div>
+
+  <!-- Port pipe OD selects -->
+  <div class="pipe-row">
+    <div class="fld"><label style="color:var(--liq)">💧 Liquid port pipe OD</label><select id="pl-pipe" onchange="calcAllPorts()"></select></div>
+    <div class="fld"><label style="color:var(--suc)">🌀 Suction port pipe OD</label><select id="ps-pipe" onchange="calcAllPorts()"></select></div>
+    <div class="fld"><label style="color:var(--dis)">🔥 Discharge port pipe OD</label><select id="pd-pipe" onchange="calcAllPorts()"></select></div>
+  </div>
+
+  <div class="port-wrap">
+    <table class="ptbl">
+      <thead>
+        <tr>
+          <th style="width:36px">Port</th>
+          <th style="width:70px">Mode</th>
+          <th style="width:74px">Cap (kW)</th>
+          <th class="liq">Liq V (m/s)</th>
+          <th class="liq">Liq ΔP (kPa)</th>
+          <th class="liq" style="width:72px">Liq status</th>
+          <th class="suc" id="th-gas-v">Gas V (m/s)</th>
+          <th class="suc" id="th-gas-dp">Gas ΔP (kPa)</th>
+          <th class="suc" id="th-gas-st" style="width:72px">Gas status</th>
+        </tr>
+      </thead>
+      <tbody id="port-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Summary -->
+  <div class="sum-grid" id="port-summary"></div>
+</div>
+
+<!-- ══════════ DIAGRAM ══════════ -->
+<div class="diag-wrap">
+  <div class="diag-title">RB unit — schematic diagram</div>
+  <svg id="rb-svg" viewBox="0 0 780 300" width="100%" style="display:block"></svg>
+  <div class="legend">
+    <span><span class="ldot" style="background:var(--liq)"></span>Liquid line</span>
+    <span><span class="ldot" style="background:var(--suc)"></span>Suction line</span>
+    <span><span class="ldot" style="background:var(--dis)"></span>Discharge line</span>
+    <span><span class="ldot" style="background:#4ADE80"></span>OK</span>
+    <span><span class="ldot" style="background:#FBBF24"></span>Warning</span>
+    <span><span class="ldot" style="background:#F87171"></span>Over limit</span>
+    <span style="font-size:10px;color:var(--di)">| Vel liq ≤1.5 m/s | Gas ≤15 m/s | ΔP ≤20 kPa = OK</span>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<footer>
+  VRF H/R Strainer Sizing Tool &nbsp;·&nbsp; สูตรคำนวณ: simplified linear refrigerant properties (R410A / R32) &nbsp;·&nbsp;
+  ใช้สำหรับ preliminary sizing เท่านั้น — cross-check กับ REFPROP / manufacturer data ก่อน final design
+</footer>
+
+<script>
+/* ══════════════════════════════════════════════
+   PIPE DATA — ACR Copper Tubing (OD × Wall)
+══════════════════════════════════════════════ */
+const PIPES={
+mm:[
+  {od:6.35,wall:0.76,label:'6.35 mm (¼")'},
+  {od:9.52,wall:0.89,label:'9.52 mm (⅜")'},
+  {od:12.7,wall:0.89,label:'12.7 mm (½")'},
+  {od:15.88,wall:1.02,label:'15.88 mm (⅝")'},
+  {od:19.05,wall:1.07,label:'19.05 mm (¾")'},
+  {od:22.22,wall:1.14,label:'22.22 mm (⅞")'},
+  {od:25.4,wall:1.14,label:'25.4 mm (1")'},
+  {od:28.58,wall:1.27,label:'28.58 mm (1⅛")'},
+  {od:31.75,wall:1.27,label:'31.75 mm (1¼")'},
+  {od:34.93,wall:1.40,label:'34.93 mm (1⅜")'},
+  {od:38.1,wall:1.40,label:'38.1 mm (1½")'},
+  {od:41.28,wall:1.52,label:'41.28 mm (1⅝")'},
+  {od:44.45,wall:1.65,label:'44.45 mm (1¾")'}
+],
+in:[
+  {od:0.250,wall:0.030,label:'¼" (6.35 mm)'},
+  {od:0.375,wall:0.035,label:'⅜" (9.52 mm)'},
+  {od:0.500,wall:0.035,label:'½" (12.7 mm)'},
+  {od:0.625,wall:0.040,label:'⅝" (15.88 mm)'},
+  {od:0.750,wall:0.042,label:'¾" (19.05 mm)'},
+  {od:0.875,wall:0.045,label:'⅞" (22.22 mm)'},
+  {od:1.000,wall:0.045,label:'1" (25.4 mm)'},
+  {od:1.125,wall:0.050,label:'1⅛" (28.58 mm)'},
+  {od:1.250,wall:0.050,label:'1¼" (31.75 mm)'},
+  {od:1.375,wall:0.055,label:'1⅜" (34.93 mm)'},
+  {od:1.500,wall:0.055,label:'1½" (38.1 mm)'},
+  {od:1.625,wall:0.060,label:'1⅝" (41.28 mm)'},
+  {od:1.750,wall:0.065,label:'1¾" (44.45 mm)'}
+]};
+
+/* ══════════════════════════════════════════════
+   REFRIGERANT PROPERTIES — simplified linear
+   Valid range approx: Tc 30–60°C, Te -5–15°C
+══════════════════════════════════════════════ */
+function getProps(ref,Tc,Te){
+  let h_liq_c,h_liq_e,h_vap_c,h_vap_e;
+  let rho_liq_c,rho_liq_e,rho_vap_c,rho_vap_e;
+  if(ref==='R410A'){
+    h_liq_c=200+1.58*Tc; h_liq_e=200+1.58*Te;
+    h_vap_c=423+0.40*Tc; h_vap_e=423+0.40*Te;
+    rho_liq_c=Math.max(800,1170-3.78*Tc);
+    rho_liq_e=Math.max(900,1170-3.78*Te);
+    rho_vap_c=6.5*Math.exp(0.058*Tc);
+    rho_vap_e=6.5*Math.exp(0.058*Te);
+  } else { // R32
+    h_liq_c=200+3.36*Tc; h_liq_e=200+3.36*Te;
+    h_vap_c=521+0.24*Tc; h_vap_e=521+0.24*Te;
+    rho_liq_c=Math.max(700,1050-4.00*Tc);
+    rho_liq_e=Math.max(800,1050-4.00*Te);
+    rho_vap_c=4.8*Math.exp(0.065*Tc);
+    rho_vap_e=4.8*Math.exp(0.065*Te);
+  }
+  return{
+    dh_cool:Math.max(1,h_vap_e-h_liq_c),   // refrigerating effect
+    dh_heat:Math.max(1,h_vap_c-h_liq_e),   // heating effect
+    rho_liq:rho_liq_c,                      // liquid at Tc (strainer inlet)
+    rho_suc:rho_vap_e,                      // suction vapor at Te
+    rho_dis:rho_vap_c,                      // discharge vapor at Tc
+  };
+}
+
+/* ══════════════════════════════════════════════
+   CALCULATION ENGINE
+══════════════════════════════════════════════ */
+function calcStr(cap_kw,dh,rho,K,od_mm,wall_mm){
+  if(cap_kw<=0||od_mm<=0) return null;
+  const mdot=cap_kw/dh;
+  const Qv=mdot/rho;
+  const id_m=(od_mm-2*wall_mm)/1000;
+  const A=Math.PI*id_m*id_m/4;
+  const V=Qv/A;
+  const dP=K*rho*V*V/2/1000; // kPa
+  return{mdot,Qv,Qv_L:Qv*60000,V,dP,id_mm:id_m*1000};
+}
+
+/* ══════════════════════════════════════════════
+   LIMITS & STATUS
+══════════════════════════════════════════════ */
+const LIM={
+  liq:{v_ok:1.5,v_wa:2.5,dp_ok:20,dp_wa:30},
+  gas:{v_ok:15, v_wa:20, dp_ok:20,dp_wa:30}
+};
+function vStat(V,type){const l=LIM[type];return V<=l.v_ok?'ok':V<=l.v_wa?'wa':'er';}
+function dStat(dp,type){const l=LIM[type];return dp<=l.dp_ok?'ok':dp<=l.dp_wa?'wa':'er';}
+function worst(a,b){return a==='er'||b==='er'?'er':a==='wa'||b==='wa'?'wa':'ok';}
+function statusLabel(s){return s==='ok'?'OK ✓':s==='wa'?'Warning':'Over limit';}
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+let unit='mm';
+let portCount=8;
+let portData=[];    // [{mode:'C'|'H'|'off', cap:10}, ...]
+
+function initPorts(n){
+  portData=[];
+  for(let i=0;i<n;i++) portData.push({mode:'C',cap:10});
+}
+
+/* ══════════════════════════════════════════════
+   PIPE SELECT HELPERS
+══════════════════════════════════════════════ */
+function getPipe(id){
+  const s=document.getElementById(id);
+  if(!s||!s.options.length)return{od_mm:22.22,wall_mm:1.14};
+  const p=PIPES[unit][s.selectedIndex]||PIPES[unit][0];
+  return unit==='mm'?{od_mm:p.od,wall_mm:p.wall}:{od_mm:p.od*25.4,wall_mm:p.wall*25.4};
+}
+
+function populateSel(id,defIdx){
+  const s=document.getElementById(id);
+  const prev=s.selectedIndex>=0?s.selectedIndex:defIdx;
+  s.innerHTML='';
+  PIPES[unit].forEach(p=>{const o=document.createElement('option');o.textContent=p.label;s.appendChild(o);});
+  s.selectedIndex=Math.min(prev,PIPES[unit].length-1);
+}
+
+function populateAll(){
+  populateSel('hl-pipe',6); populateSel('hs-pipe',8); populateSel('hd-pipe',7);
+  populateSel('pl-pipe',3); populateSel('ps-pipe',5); populateSel('pd-pipe',4);
+}
+
+/* ══════════════════════════════════════════════
+   FORMAT
+══════════════════════════════════════════════ */
+function fn(n,d){return(isNaN(n)||!isFinite(n))?'—':n.toFixed(d);}
+
+function setBadge(id,s){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.className='badge '+s;
+  el.textContent=statusLabel(s);
+}
+
+function setRec(id,w,od){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(w==='ok') el.innerHTML=`<span style="color:var(--ok)">✓ เหมาะสม — Strainer OD ${parseFloat(od).toFixed(2)} mm</span>`;
+  else if(w==='wa') el.innerHTML=`<span style="color:var(--wa)">⚠ ใกล้ขีดจำกัด — พิจารณาขนาดท่อที่ใหญ่ขึ้น</span>`;
+  else el.innerHTML=`<span style="color:var(--er)">✗ เกินขีดจำกัด — ต้องใช้ท่อขนาดใหญ่ขึ้น</span>`;
+}
+
+/* ══════════════════════════════════════════════
+   PROPS HELPER
+══════════════════════════════════════════════ */
+function getCond(){
+  return{
+    ref:document.getElementById('sel-ref').value,
+    Tc:parseFloat(document.getElementById('inp-Tc').value)||45,
+    Te:parseFloat(document.getElementById('inp-Te').value)||7,
+    Kl:parseFloat(document.getElementById('kl').value)||5,
+    Ks:parseFloat(document.getElementById('ks').value)||5,
+    Kd:parseFloat(document.getElementById('kd').value)||5,
+  };
+}
+
+/* ══════════════════════════════════════════════
+   UPDATE CHIPS
+══════════════════════════════════════════════ */
+function updateChips(pr){
+  document.getElementById('dh-cool').textContent=fn(pr.dh_cool,1);
+  document.getElementById('dh-heat').textContent=fn(pr.dh_heat,1);
+  document.getElementById('rho-liq').textContent=fn(pr.rho_liq,1);
+  document.getElementById('rho-suc').textContent=fn(pr.rho_suc,2);
+  document.getElementById('rho-dis').textContent=fn(pr.rho_dis,2);
+}
+
+/* ══════════════════════════════════════════════
+   HEADER CALC
+══════════════════════════════════════════════ */
+function calcHeaders(){
+  const c=getCond();
+  const pr=getProps(c.ref,c.Tc,c.Te);
+
+  // Sum caps from ports
+  let sumCool=0,sumHeat=0;
+  portData.forEach(p=>{
+    if(p.mode==='C') sumCool+=p.cap;
+    else if(p.mode==='H') sumHeat+=p.cap;
+  });
+  const sumAll=sumCool+sumHeat;
+
+  // Liquid: all active ports (cooling ports use dh_cool, heating use dh_heat)
+  // For header sizing: use total cap / weighted dh (simplify: use dh_cool for the tool)
+  const liqMdot = sumCool/pr.dh_cool + sumHeat/pr.dh_heat;
+  const{od_mm:lodm,wall_mm:lowm}=getPipe('hl-pipe');
+  const liqQv=liqMdot/pr.rho_liq;
+  const lid_m=(lodm-2*lowm)/1000;
+  const lA=Math.PI*lid_m*lid_m/4;
+  const lV=liqQv/lA;
+  const ldP=c.Kl*pr.rho_liq*lV*lV/2/1000;
+  document.getElementById('hl-mdot').textContent=fn(liqMdot,4)+' kg/s';
+  document.getElementById('hl-qv').textContent=fn(liqQv*60000,2)+' L/min';
+  document.getElementById('hl-id').textContent=fn(lid_m*1000,2)+' mm';
+  document.getElementById('hl-vel').textContent=fn(lV,3)+' m/s';
+  document.getElementById('hl-dp').textContent=fn(ldP,2)+' kPa';
+  const lvs=vStat(lV,'liq'),lds=dStat(ldP,'liq');
+  setBadge('hl-vs',lvs); setBadge('hl-ds',lds);
+  setRec('hl-rec',worst(lvs,lds),lodm);
+
+  // Suction: cooling ports only
+  const sucMdot=sumCool/pr.dh_cool;
+  const{od_mm:sodm,wall_mm:sowm}=getPipe('hs-pipe');
+  if(sumCool>0){
+    const sucQv=sucMdot/pr.rho_suc;
+    const sid_m=(sodm-2*sowm)/1000;
+    const sA=Math.PI*sid_m*sid_m/4;
+    const sV=sucQv/sA;
+    const sdP=c.Ks*pr.rho_suc*sV*sV/2/1000;
+    document.getElementById('hs-mdot').textContent=fn(sucMdot,4)+' kg/s';
+    document.getElementById('hs-qv').textContent=fn(sucQv*60000,2)+' L/min';
+    document.getElementById('hs-id').textContent=fn(sid_m*1000,2)+' mm';
+    document.getElementById('hs-vel').textContent=fn(sV,3)+' m/s';
+    document.getElementById('hs-dp').textContent=fn(sdP,2)+' kPa';
+    const svs=vStat(sV,'gas'),sds=dStat(sdP,'gas');
+    setBadge('hs-vs',svs); setBadge('hs-ds',sds);
+    setRec('hs-rec',worst(svs,sds),sodm);
+  } else {
+    ['hs-mdot','hs-qv','hs-id','hs-vel','hs-dp'].forEach(id=>document.getElementById(id).textContent='—');
+    setBadge('hs-vs','na'); setBadge('hs-ds','na');
+    document.getElementById('hs-rec').textContent='ไม่มี cooling port';
+  }
+
+  // Discharge: heating ports only
+  const disMdot=sumHeat/pr.dh_heat;
+  const{od_mm:dodm,wall_mm:dowm}=getPipe('hd-pipe');
+  if(sumHeat>0){
+    const disQv=disMdot/pr.rho_dis;
+    const did_m=(dodm-2*dowm)/1000;
+    const dA=Math.PI*did_m*did_m/4;
+    const dV=disQv/dA;
+    const ddP=c.Kd*pr.rho_dis*dV*dV/2/1000;
+    document.getElementById('hd-mdot').textContent=fn(disMdot,4)+' kg/s';
+    document.getElementById('hd-qv').textContent=fn(disQv*60000,2)+' L/min';
+    document.getElementById('hd-id').textContent=fn(did_m*1000,2)+' mm';
+    document.getElementById('hd-vel').textContent=fn(dV,3)+' m/s';
+    document.getElementById('hd-dp').textContent=fn(ddP,2)+' kPa';
+    const dvs=vStat(dV,'gas'),dds=dStat(ddP,'gas');
+    setBadge('hd-vs',dvs); setBadge('hd-ds',dds);
+    setRec('hd-rec',worst(dvs,dds),dodm);
+  } else {
+    ['hd-mdot','hd-qv','hd-id','hd-vel','hd-dp'].forEach(id=>document.getElementById(id).textContent='—');
+    setBadge('hd-vs','na'); setBadge('hd-ds','na');
+    document.getElementById('hd-rec').textContent='ไม่มี heating port';
+  }
+
+  document.getElementById('sum-cool').textContent=sumCool.toFixed(1);
+  document.getElementById('sum-heat').textContent=sumHeat.toFixed(1);
+}
+
+/* ══════════════════════════════════════════════
+   PORT TABLE
+══════════════════════════════════════════════ */
+function buildPortTable(){
+  const tb=document.getElementById('port-tbody');
+  tb.innerHTML='';
+  for(let i=0;i<portCount;i++){
+    const p=portData[i];
+    const tr=document.createElement('tr');
+    tr.id='pr-'+i;
+    tr.innerHTML=`
+      <td style="font-weight:700;color:var(--liq)">P${i+1}</td>
+      <td>
+        <button class="mpill ${p.mode==='C'?'mc':p.mode==='H'?'mh':'moff'}" id="mode-btn-${i}" onclick="cycleMode(${i})">${p.mode==='C'?'Cool':p.mode==='H'?'Heat':'Off'}</button>
+      </td>
+      <td><input type="number" id="cap-${i}" value="${p.cap}" step="0.5" oninput="portCapChanged(${i})"></td>
+      <td class="pmono" id="lv-${i}">—</td>
+      <td class="pmono" id="ld-${i}">—</td>
+      <td id="ls-${i}"><span class="badge na">—</span></td>
+      <td class="pmono" id="gv-${i}">—</td>
+      <td class="pmono" id="gd-${i}">—</td>
+      <td id="gs-${i}"><span class="badge na">—</span></td>`;
+    tb.appendChild(tr);
+  }
+}
+
+function cycleMode(i){
+  const modes=['C','H','off'];
+  const cur=portData[i].mode;
+  const idx=modes.indexOf(cur);
+  portData[i].mode=modes[(idx+1)%3];
+  const btn=document.getElementById('mode-btn-'+i);
+  const m=portData[i].mode;
+  btn.className='mpill '+(m==='C'?'mc':m==='H'?'mh':'moff');
+  btn.textContent=m==='C'?'Cool':m==='H'?'Heat':'Off';
+  const dist=document.querySelector('input[name="dist"]:checked').value;
+  if(dist!=='manual') rebuildMode(dist);
+  calcAllPorts();
+}
+
+function portCapChanged(i){
+  portData[i].cap=parseFloat(document.getElementById('cap-'+i).value)||0;
+  calcAllPorts();
+}
+
+/* ══════════════════════════════════════════════
+   CALCULATE ALL PORTS
+══════════════════════════════════════════════ */
+function calcAllPorts(){
+  const c=getCond();
+  const pr=getProps(c.ref,c.Tc,c.Te);
+  const{od_mm:l_od,wall_mm:l_wl}=getPipe('pl-pipe');
+  const{od_mm:s_od,wall_mm:s_wl}=getPipe('ps-pipe');
+  const{od_mm:d_od,wall_mm:d_wl}=getPipe('pd-pipe');
+
+  const portResults=[];
+  for(let i=0;i<portCount;i++){
+    const p=portData[i];
+    if(p.mode==='off'||p.cap<=0){
+      document.getElementById('lv-'+i).textContent='—';
+      document.getElementById('ld-'+i).textContent='—';
+      document.getElementById('gv-'+i).textContent='—';
+      document.getElementById('gd-'+i).textContent='—';
+      document.getElementById('ls-'+i).innerHTML='<span class="badge na">—</span>';
+      document.getElementById('gs-'+i).innerHTML='<span class="badge na">—</span>';
+      portResults.push({mode:'off',lv:0,ld:0,gv:0,gd:0,cap:0,lvs:'na',gvs:'na'});
+      continue;
+    }
+    const isC=p.mode==='C';
+    // Liquid line
+    const dh_l=isC?pr.dh_cool:pr.dh_heat;
+    const rL=calcStr(p.cap,dh_l,pr.rho_liq,c.Kl,l_od,l_wl);
+    // Gas line (suction for C, discharge for H)
+    const dh_g=isC?pr.dh_cool:pr.dh_heat;
+    const rho_g=isC?pr.rho_suc:pr.rho_dis;
+    const K_g=isC?c.Ks:c.Kd;
+    const pipe_g_od=isC?s_od:d_od;
+    const pipe_g_wl=isC?s_wl:d_wl;
+    const rG=calcStr(p.cap,dh_g,rho_g,K_g,pipe_g_od,pipe_g_wl);
+
+    const lvs=vStat(rL.V,'liq'),lds=dStat(rL.dP,'liq');
+    const gvs=vStat(rG.V,'gas'),gds=dStat(rG.dP,'gas');
+    const lw=worst(lvs,lds),gw=worst(gvs,gds);
+
+    document.getElementById('lv-'+i).textContent=fn(rL.V,3);
+    document.getElementById('ld-'+i).textContent=fn(rL.dP,2);
+    document.getElementById('gv-'+i).textContent=fn(rG.V,3);
+    document.getElementById('gd-'+i).textContent=fn(rG.dP,2);
+
+    const lbEl=document.getElementById('ls-'+i);
+    lbEl.innerHTML=`<span class="badge ${lw}">${statusLabel(lw)}</span>`;
+    const gbEl=document.getElementById('gs-'+i);
+    gbEl.innerHTML=`<span class="badge ${gw}">${statusLabel(gw)}</span>`;
+
+    portResults.push({mode:p.mode,lv:rL.V,ld:rL.dP,gv:rG.V,gd:rG.dP,cap:p.cap,lvs:lw,gvs:gw});
+  }
+
+  updatePortSummary(portResults);
+  calcHeaders();
+  drawDiagram(portResults);
+}
+
+/* ══════════════════════════════════════════════
+   PORT SUMMARY
+══════════════════════════════════════════════ */
+function updatePortSummary(pr){
+  const active=pr.filter(p=>p.mode!=='off'&&p.cap>0);
+  const cPorts=pr.filter(p=>p.mode==='C'&&p.cap>0);
+  const hPorts=pr.filter(p=>p.mode==='H'&&p.cap>0);
+  const maxLv=active.length?Math.max(...active.map(p=>p.lv)):0;
+  const maxLd=active.length?Math.max(...active.map(p=>p.ld)):0;
+  const maxGv=active.length?Math.max(...active.map(p=>p.gv)):0;
+  const maxGd=active.length?Math.max(...active.map(p=>p.gd)):0;
+  const okAll=active.filter(p=>p.lvs==='ok'&&p.gvs==='ok').length;
+  const sg=document.getElementById('port-summary');
+  sg.innerHTML=`
+    <div class="scard"><div class="sl">Cooling ports</div><div class="sv" style="color:var(--liq)">${cPorts.length}/${portCount}</div></div>
+    <div class="scard"><div class="sl">Heating ports</div><div class="sv" style="color:var(--dis)">${hPorts.length}/${portCount}</div></div>
+    <div class="scard"><div class="sl">Max liq V</div><div class="sv">${maxLv.toFixed(2)} m/s</div></div>
+    <div class="scard"><div class="sl">Max liq ΔP</div><div class="sv">${maxLd.toFixed(2)} kPa</div></div>
+    <div class="scard"><div class="sl">Max gas V</div><div class="sv">${maxGv.toFixed(2)} m/s</div></div>
+    <div class="scard"><div class="sl">Max gas ΔP</div><div class="sv">${maxGd.toFixed(2)} kPa</div></div>
+    <div class="scard"><div class="sl">Ports OK</div><div class="sv" style="color:${okAll===active.length?'var(--ok)':'var(--wa)'}">${okAll}/${active.length}</div></div>`;
+}
+
+/* ══════════════════════════════════════════════
+   DISTRIBUTION
+══════════════════════════════════════════════ */
+function distributeEqual(){
+  const total=parseFloat(document.getElementById('eq-total').value)||80;
+  const dist=document.querySelector('input[name="dist"]:checked').value;
+  const targets=portData.filter(p=>dist==='equalH'?p.mode==='H':p.mode==='C');
+  if(!targets.length) return;
+  const pp=+(total/targets.length).toFixed(2);
+  portData.forEach((p,i)=>{
+    if((dist==='equalH'&&p.mode==='H')||(dist!=='equalH'&&p.mode==='C')){
+      p.cap=pp;
+      const el=document.getElementById('cap-'+i);
+      if(el) el.value=pp;
+    }
+  });
+  calcAllPorts();
+}
+
+function rebuildMode(dist){
+  portData.forEach(p=>{p.mode=dist==='equalH'?'H':'C';});
+  buildPortTable();
+  distributeEqual();
+}
+
+function toggleDist(){
+  const dist=document.querySelector('input[name="dist"]:checked').value;
+  const eqF=document.getElementById('eq-field');
+  eqF.style.display=dist!=='manual'?'flex':'none';
+  if(dist!=='manual'){
+    portData.forEach(p=>{p.mode=dist==='equalH'?'H':'C';});
+    buildPortTable();
+    distributeEqual();
+  } else {
+    document.querySelectorAll('#port-tbody input[type=number]').forEach(e=>e.disabled=false);
+    calcAllPorts();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SVG DIAGRAM
+══════════════════════════════════════════════ */
+function drawDiagram(portResults){
+  const svg=document.getElementById('rb-svg');
+  const W=780,H=300;
+  const N=portCount;
+
+  const rbX=W/2-80,rbY=110,rbW=160,rbH=70;
+  const cx=W/2;
+
+  const statusColor=s=>s==='ok'?'#4ADE80':s==='wa'?'#FBBF24':s==='er'?'#F87171':'#4A6A88';
+  const lineColor={'liq':'#22D3EE','suc':'#A78BFA','dis':'#FB923C'};
+
+  let s='';
+
+  // Grid dots
+  for(let x=15;x<W;x+=28)for(let y=10;y<H;y+=28)
+    s+=`<circle cx="${x}" cy="${y}" r="1" fill="#1e3050"/>`;
+
+  // Three header connections (top)
+  const hConns=[
+    {label:'Liquid',color:'#22D3EE',x:cx-110,y:20,key:'liq'},
+    {label:'Suction',color:'#A78BFA',x:cx,y:20,key:'suc'},
+    {label:'Discharge',color:'#FB923C',x:cx+110,y:20,key:'dis'}
+  ];
+  hConns.forEach(hc=>{
+    s+=`<line x1="${hc.x}" y1="${hc.y+28}" x2="${hc.x}" y2="${rbY}" stroke="${hc.color}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${hc.key==='liq'?'none':'5,3'}"/>`;
+    s+=`<rect x="${hc.x-28}" y="${hc.y}" width="56" height="26" rx="4" fill="${hc.color}20" stroke="${hc.color}" stroke-width="1.5"/>`;
+    s+=`<text x="${hc.x}" y="${hc.y+10}" text-anchor="middle" fill="${hc.color}" font-size="7.5" font-family="monospace" font-weight="700">STRAINER</text>`;
+    s+=`<text x="${hc.x}" y="${hc.y+21}" text-anchor="middle" fill="${hc.color}" font-size="7" font-family="monospace">${hc.label}</text>`;
+    s+=`<polygon points="${hc.x-4},${rbY} ${hc.x+4},${rbY} ${hc.x},${rbY+7}" fill="${hc.color}"/>`;
+  });
+
+  // RB box
+  s+=`<rect x="${rbX}" y="${rbY}" width="${rbW}" height="${rbH}" rx="9" fill="#0a1828" stroke="#378ADD" stroke-width="2"/>`;
+  s+=`<text x="${cx}" y="${rbY+28}" text-anchor="middle" fill="#378ADD" font-size="14" font-weight="700" font-family="sans-serif">RB unit</text>`;
+  s+=`<text x="${cx}" y="${rbY+46}" text-anchor="middle" fill="#7BAAC8" font-size="10" font-family="sans-serif">${N} Ports — H/R</text>`;
+  s+=`<text x="${cx}" y="${rbY+62}" text-anchor="middle" fill="#4A6A88" font-size="9" font-family="monospace">${document.getElementById('sel-ref').value} | Tc=${document.getElementById('inp-Tc').value}°C</text>`;
+
+  // Port boxes
+  const portW=Math.min(52,Math.max(36,(W-30)/N-6));
+  const startX=(W-N*(portW+6)+6)/2;
+  const portY=215;
+
+  for(let i=0;i<N;i++){
+    const p=portResults[i]||{mode:'off',lvs:'na',gvs:'na',lv:0,gv:0,cap:0};
+    const px=startX+i*(portW+6);
+    const pcx=px+portW/2;
+    const isC=p.mode==='C',isH=p.mode==='H';
+    const lineClr=isC?lineColor.liq:isH?lineColor.dis:lineColor.liq;
+    const dashClr=isC?lineColor.suc:isH?lineColor.dis:'#4A6A88';
+    const boxClr=p.mode==='off'?'#253852':isC?statusColor(p.lvs):statusColor(p.lvs);
+    const boxStr=p.mode==='off'?'#4A6A88':statusColor(worst(p.lvs,p.gvs));
+    const lineX_rb=rbX+(rbW/(N+1))*(i+1);
+
+    // Line from RB to port
+    s+=`<line x1="${lineX_rb}" y1="${rbY+rbH}" x2="${pcx}" y2="${portY}" stroke="${boxStr}" stroke-width="2" stroke-dasharray="4,2"/>`;
+
+    // Mini strainer on line
+    const sy=(rbY+rbH+portY)/2-9;
+    s+=`<rect x="${pcx-11}" y="${sy}" width="22" height="14" rx="3" fill="${boxStr}25" stroke="${boxStr}" stroke-width="1"/>`;
+    s+=`<text x="${pcx}" y="${sy+10}" text-anchor="middle" fill="${boxStr}" font-size="7" font-family="monospace">STR</text>`;
+
+    // Port box
+    s+=`<rect x="${px}" y="${portY}" width="${portW}" height="32" rx="4" fill="${boxStr}20" stroke="${boxStr}" stroke-width="1.5"/>`;
+    s+=`<text x="${pcx}" y="${portY+12}" text-anchor="middle" fill="${boxStr}" font-size="9" font-weight="700" font-family="monospace">P${i+1}</text>`;
+
+    const mLabel=isC?'C':isH?'H':'—';
+    s+=`<text x="${pcx}" y="${portY+23}" text-anchor="middle" fill="${boxStr}" font-size="8" font-family="monospace">[${mLabel}]</text>`;
+
+    if(p.cap>0&&p.mode!=='off'){
+      s+=`<text x="${pcx}" y="${portY+38}" text-anchor="middle" fill="#7BAAC8" font-size="7.5" font-family="monospace">${p.cap.toFixed(1)}kW</text>`;
+      s+=`<text x="${pcx}" y="${portY+48}" text-anchor="middle" fill="${boxStr}" font-size="7" font-family="monospace">L:${p.lv.toFixed(1)} G:${p.gv.toFixed(1)}</text>`;
+    } else {
+      s+=`<text x="${pcx}" y="${portY+38}" text-anchor="middle" fill="#4A6A88" font-size="8" font-family="monospace">off</text>`;
+    }
+  }
+
+  svg.innerHTML=s;
+  svg.setAttribute('viewBox',`0 0 ${W} ${portY+60}`);
+}
+
+/* ══════════════════════════════════════════════
+   UNIT SWITCH
+══════════════════════════════════════════════ */
+function setUnit(u){
+  unit=u;
+  document.getElementById('btn-mm').classList.toggle('on',u==='mm');
+  document.getElementById('btn-in').classList.toggle('on',u==='in');
+  populateAll();
+  recalcAll();
+}
+
+/* ══════════════════════════════════════════════
+   PORT COUNT CHANGE
+══════════════════════════════════════════════ */
+function onPortCountChange(){
+  const sl=document.getElementById('port-slider');
+  const nm=document.getElementById('port-num');
+  const src=event.target.id;
+  let n=parseInt(src==='port-slider'?sl.value:nm.value)||8;
+  n=Math.min(16,Math.max(2,n));
+  sl.value=n; nm.value=n;
+  if(n===portCount) return;
+  while(portData.length<n) portData.push({mode:'C',cap:10});
+  portData=portData.slice(0,n);
+  portCount=n;
+  buildPortTable();
+  const dist=document.querySelector('input[name="dist"]:checked').value;
+  if(dist!=='manual') distributeEqual();
+  else calcAllPorts();
+}
+
+/* ══════════════════════════════════════════════
+   RECALC ALL
+══════════════════════════════════════════════ */
+function recalcAll(){
+  const c=getCond();
+  const pr=getProps(c.ref,c.Tc,c.Te);
+  updateChips(pr);
+  calcAllPorts(); // also calls calcHeaders & drawDiagram
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+function init(){
+  populateAll();
+  // Default header: Liquid=25.4mm(6), Suction=31.75mm(8), Discharge=28.58mm(7)
+  document.getElementById('hl-pipe').selectedIndex=6;
+  document.getElementById('hs-pipe').selectedIndex=8;
+  document.getElementById('hd-pipe').selectedIndex=7;
+  // Default port pipes: Liquid=15.88mm(3), Suction=22.22mm(5), Discharge=19.05mm(4)
+  document.getElementById('pl-pipe').selectedIndex=3;
+  document.getElementById('ps-pipe').selectedIndex=5;
+  document.getElementById('pd-pipe').selectedIndex=4;
+  initPorts(portCount);
+  buildPortTable();
+  distributeEqual();
+  recalcAll();
+}
+
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
